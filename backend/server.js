@@ -39,28 +39,36 @@ const AVAILABLE_MODELS = [
 // Python Backend Integration
 const PYTHON_BACKEND_URL = process.env.PYTHON_BACKEND_URL || 'http://localhost:8000';
 
-// AI Response Generator - Calls Python FastAPI backend
+// AI Response Generator - Mock version for Portfolio purposes
 async function generateAIResponse(message, model) {
-  try {
-    // Call Python FastAPI backend
-    const response = await axios.post(`${PYTHON_BACKEND_URL}/chat`, {
-      question: message,
-      model_type: model  // 'llama' or 'gemini'
-    });
-
-    return response.data.answer;
-  } catch (error) {
-    console.error('Error calling Python backend:', error.message);
-    
-    // Fallback error message
-    if (error.response) {
-      throw new Error(`AI Error: ${error.response.data.detail || 'Failed to get response'}`);
-    } else if (error.request) {
-      throw new Error('Cannot connect to AI backend. Please ensure Python backend is running on port 8000.');
-    } else {
-      throw new Error(`Error: ${error.message}`);
-    }
+  // Simulate network delay to make it feel like real AI processing
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  const lowerMessage = message.toLowerCase();
+  
+  if (lowerMessage.includes('enroll') || lowerMessage.includes('deadline')) {
+    return "If you missed the deadline for enrollment, you should immediately contact the Academic Bureau. Late enrollments are subject to approval and may incur a late fee. You can reach them at academic@president.ac.id or visit their office in Building A.";
   }
+  if (lowerMessage.includes('drop') || lowerMessage.includes('classes') || lowerMessage.includes('subjects')) {
+    return "Yes, you can drop subjects during the Add/Drop period, which is typically the first two weeks of the semester. After this period, dropping a class will result in a 'W' (Withdrawal) on your transcript. Please consult with your academic advisor before making changes.";
+  }
+  if (lowerMessage.includes('gpa') || lowerMessage.includes('access')) {
+    return "If you can't access your GPA, it might be due to pending administrative requirements or library fines. Please check your PUIS (President University Information System) dashboard for any holds on your account, or contact the Finance Department if it's related to tuition payments.";
+  }
+  if (lowerMessage.includes('major') || lowerMessage.includes('concentration')) {
+    return "Changing your major or concentration is possible, but it requires approval from both your current Head of Study Program and the one you wish to transfer to. You must fill out the 'Change of Major' form available at the Academic Bureau and meet the specific GPA requirements for the new program.";
+  }
+  if (lowerMessage.includes('academic bureau') || lowerMessage.includes('meet') || lowerMessage.includes('consult')) {
+    return "You can definitely meet a representative from the Academic Bureau! Their office hours are Monday to Friday, from 08:00 AM to 04:00 PM. They are located on the first floor of Building A. It's recommended to schedule an appointment via PUIS beforehand to avoid long queues.";
+  }
+  if (lowerMessage.includes('transfer')) {
+    return "Transferring to President University requires you to submit your previous academic transcripts for evaluation. The admission team will assess which credits can be transferred. Please contact admission@president.ac.id for the complete transfer student guidelines.";
+  }
+  if (lowerMessage.includes('hello') || lowerMessage.includes('hi ')) {
+    return `Hello there! I'm Jarvis AI powered by ${model === 'gemini' ? 'Gemini 2.5 Flash' : 'Llama 3.2'}. How can I assist you with your academic inquiries at President University today?`;
+  }
+  
+  return `That's an interesting question about "${message}". As an AI assistant for President University, I'm constantly learning. For specific details regarding this matter, I would recommend checking the student handbook or contacting the relevant academic department directly.`;
 }
 
 // Routes
@@ -75,10 +83,10 @@ app.get('/api/models', (req, res) => {
 
 // Get greeting with suggested questions
 app.get('/api/greeting', async (req, res) => {
-  try {
-    const { model } = req.query;
-    const modelType = model || 'llama';
+  const { model } = req.query;
+  const modelType = model || 'llama';
 
+  try {
     // Call Python backend for greeting
     const response = await axios.get(`${PYTHON_BACKEND_URL}/greeting`, {
       params: { model_type: modelType }
@@ -89,6 +97,7 @@ app.get('/api/greeting', async (req, res) => {
       ...response.data
     });
   } catch (error) {
+
     console.error('Greeting error:', error.message);
     // Fallback greeting with sample questions if backend fails
     const fallbackQuestions = [

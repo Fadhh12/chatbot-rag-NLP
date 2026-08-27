@@ -203,7 +203,7 @@ export const ChatHistory = ({ onSelectSession, currentSessionId, onNewChat }) =>
                     }}
                     title={session.lastMessage || 'Empty conversation'}
                   >
-                    {session.lastMessage.substring(0, 28)}...
+                    {(session.lastMessage || 'New conversation').substring(0, 28)}...
                   </button>
                   <button
                     onClick={(e) => handleDeleteSession(session.sessionId, e)}

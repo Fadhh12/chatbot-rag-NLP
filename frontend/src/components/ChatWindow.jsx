@@ -9,10 +9,11 @@ export const ChatWindow = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [models, setModels] = useState([]);
-  const [selectedModel, setSelectedModel] = useState('gpt-4');
+  const [selectedModel, setSelectedModel] = useState('llama');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const [error, setError] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef(null);
 
   // Load models on component mount
@@ -173,6 +174,9 @@ export const ChatWindow = () => {
         setMessages(response.data.history);
         setInputValue('');
         setError(null);
+        if (window.innerWidth <= 768) {
+          setIsSidebarOpen(false);
+        }
       }
     } catch (error) {
       console.error('Failed to load session:', error);
@@ -181,16 +185,25 @@ export const ChatWindow = () => {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100%', backgroundColor: '#1a1a1a' }}>
-      {/* Sidebar */}
-      <ChatHistory 
-        onSelectSession={handleSelectSession}
-        currentSessionId={sessionId}
-        onNewChat={handleNewChat}
+    <div style={{ display: 'flex', height: '100%', backgroundColor: '#1a1a1a', position: 'relative', overflow: 'hidden' }}>
+      
+      {/* Mobile Overlay */}
+      <div 
+        className={`mobile-overlay ${isSidebarOpen ? 'open' : ''}`}
+        onClick={() => setIsSidebarOpen(false)}
       />
 
+      {/* Sidebar */}
+      <div className={`sidebar-container ${isSidebarOpen ? 'open' : ''}`}>
+        <ChatHistory 
+          onSelectSession={handleSelectSession}
+          currentSessionId={sessionId}
+          onNewChat={handleNewChat}
+        />
+      </div>
+
       {/* Main Chat Area */}
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', flex: 1, backgroundColor: '#0d0d0d' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', flex: 1, backgroundColor: '#0d0d0d', position: 'relative' }}>
 
       {/* Header */}
       <div style={{ 
@@ -201,6 +214,18 @@ export const ChatWindow = () => {
         alignItems: 'center',
         gap: '12px'
       }}>
+        {/* Hamburger Menu for Mobile */}
+        <button 
+          className="menu-button"
+          onClick={() => setIsSidebarOpen(true)}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+
         <div style={{ fontSize: '24px' }}>🤖</div>
         <div>
           <h1 style={{ 
