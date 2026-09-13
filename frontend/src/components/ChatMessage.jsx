@@ -10,7 +10,7 @@ export const ChatMessage = ({ message, isUser, onQuestionClick }) => {
   const isLoadingMessage = message.isLoading || message.content === 'typing';
 
   return (
-    <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', marginBottom: '20px', paddingX: '16px' }}>
+    <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', marginBottom: '20px', paddingLeft: '16px', paddingRight: '16px' }}>
       <div style={{
         borderRadius: '16px',
         padding: '14px 16px',
