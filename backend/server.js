@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 const axios = require('axios');
+const { answerWithGemini } = require('./lib/rag');
 
 // Load environment variables
 dotenv.config();
@@ -39,11 +40,26 @@ const AVAILABLE_MODELS = [
 // Python Backend Integration
 const PYTHON_BACKEND_URL = process.env.PYTHON_BACKEND_URL || 'http://localhost:8000';
 
-// AI Response Generator - Mock version for Portfolio purposes
-async function generateAIResponse(message, model) {
+// AI Response Generator
+// - "gemini": real RAG answer grounded on data/*.md via Gemini (see lib/rag.js)
+// - "llama": mock response (Llama/Ollama needs a local model, can't run on this deployment)
+async function generateAIResponse(message, model, sessionId) {
+  if (model === 'gemini') {
+    try {
+      return await answerWithGemini(message, sessionId || 'default');
+    } catch (error) {
+      console.error('Gemini RAG error:', error.response?.data || error.message);
+      return "Sorry, I'm having trouble reaching Gemini right now. Please try again in a moment, or contact the relevant university department directly.";
+    }
+  }
+
+  return generateMockResponse(message, model);
+}
+
+async function generateMockResponse(message, model) {
   // Simulate network delay to make it feel like real AI processing
   await new Promise(resolve => setTimeout(resolve, 1500));
-  
+
   const lowerMessage = message.toLowerCase();
   
   if (lowerMessage.includes('enroll') || lowerMessage.includes('deadline')) {
@@ -161,7 +177,7 @@ app.post('/api/chat', async (req, res) => {
     chatHistory[session].push(userMessage);
 
     // Generate AI response
-    const aiResponse = await generateAIResponse(message, model);
+    const aiResponse = await generateAIResponse(message, model, session);
 
     messageId++;
     const assistantMessage = {
